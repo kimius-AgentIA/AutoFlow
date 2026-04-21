@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoFlow — Agents IA qui travaillent à votre place</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #050608;
+  --bg2:      #080b10;
+  --surface:  #0c1018;
+  --card:     #101520;
+  --border:   rgba(0,210,255,0.10);
+  --border2:  rgba(255,255,255,0.05);
+  --cyan:     #00d2ff;
+  --cyan2:    #0099cc;
+  --orange:   #ff6b2b;
+  --green:    #00ff9d;
+  --text:     #e8eef8;
+  --muted:    #5a6a80;
+  --muted2:   #8899aa;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Exo 2',sans-serif;
+  overflow-x:hidden;
+  cursor:none;
+}
+
+/* CUSTOM CURSOR */
+.cursor{
+  position:fixed;width:10px;height:10px;
+  background:var(--cyan);border-radius:50%;
+  pointer-events:none;z-index:9999;
+  transition:transform 0.15s ease;
+  mix-blend-mode:screen;
+}
+.cursor-ring{
+  position:fixed;width:36px;height:36px;
+  border:1px solid rgba(0,210,255,0.4);border-radius:50%;
+  pointer-events:none;z-index:9998;
+  transition:transform 0.35s ease, width 0.3s, height 0.3s;
+}
+
+/* GRID BACKGROUND */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(0,210,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,210,255,0.03) 1px, transparent 1px);
+  background-size:60px 60px;
+  pointer-events:none;z-index:0;
+}
+
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,120,180,0.12) 0%, transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+/* ──────────── NAV ──────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.1rem 6%;
+  background:rgba(5,6,8,0.75);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+
+.logo{
+  display:flex;align-items:center;gap:0.6rem;
+  font-family:'Exo 2',sans-serif;
+  font-weight:900;font-size:1.4rem;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+}
+.logo-icon{
+  width:32px;height:32px;
+  background:linear-gradient(135deg,var(--cyan),var(--cyan2));
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.9rem;
+  box-shadow:0 0 20px rgba(0,210,255,0.4);
+}
+.logo-text{color:var(--text)}
+.logo-text em{color:var(--cyan);font-style:normal}
+
+nav ul{list-style:none;display:flex;gap:2.5rem}
+nav a{
+  color:var(--muted2);text-decoration:none;
+  font-size:0.82rem;font-weight:600;
+  letter-spacing:0.08em;text-transform:uppercase;
+  transition:color 0.2s;
+}
+nav a:hover{color:var(--cyan)}
+
+.nav-cta{
+  background:transparent;
+  border:1px solid var(--cyan);
+  color:var(--cyan) !important;
+  padding:0.5rem 1.4rem;
+  border-radius:4px;
+  font-size:0.78rem !important;
+  letter-spacing:0.1em !important;
+  transition:background 0.2s, box-shadow 0.2s !important;
+  position:relative;overflow:hidden;
+}
+.nav-cta::before{
+  content:'';position:absolute;inset:0;
+  background:var(--cyan);opacity:0;
+  transition:opacity 0.2s;
+}
+.nav-cta:hover::before{opacity:0.1}
+.nav-cta:hover{box-shadow:0 0 20px rgba(0,210,255,0.3) !important}
+
+/* ──────────── HERO ──────────── */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:flex-start;
+  padding:8rem 6% 4rem;
+  position:relative;overflow:hidden;
+}
+
+.hero-orb{
+  position:absolute;
+  right:-10%;top:50%;transform:translateY(-50%);
+  width:700px;height:700px;
+  background:radial-gradient(circle, rgba(0,210,255,0.07) 0%, rgba(0,100,150,0.04) 40%, transparent 70%);
+  pointer-events:none;
+  animation:orbFloat 8s ease-in-out infinite;
+}
+
+@keyframes orbFloat{
+  0%,100%{transform:translateY(-50%) scale(1)}
+  50%{transform:translateY(-52%) scale(1.04)}
+}
+
+.hero-lines{
+  position:absolute;right:8%;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:3px;opacity:0.15;
+  pointer-events:none;
+}
+.hero-line{height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);animation:lineScan 3s ease-in-out infinite}
+.hero-line:nth-child(1){width:300px;animation-delay:0s}
+.hero-line:nth-child(2){width:200px;animation-delay:0.4s}
+.hero-line:nth-child(3){width:260px;animation-delay:0.8s}
+.hero-line:nth-child(4){width:180px;animation-delay:1.2s}
+.hero-line:nth-child(5){width:240px;animation-delay:1.6s}
+@keyframes lineScan{0%,100%{opacity:0.3;transform:scaleX(0.8)}50%{opacity:1;transform:scaleX(1)}}
+
+.status-pill{
+  display:inline-flex;align-items:center;gap:0.5rem;
+  background:rgba(0,210,255,0.06);
+  border:1px solid rgba(0,210,255,0.2);
+  padding:0.4rem 1rem;border-radius:2px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.72rem;color:var(--cyan);
+  margin-bottom:2rem;letter-spacing:0.05em;
+  animation:fadeUp 0.5s ease both;
+}
+.status-dot{
+  width:6px;height:6px;background:var(--green);
+  border-radius:50%;animation:blink 1.5s ease-in-out infinite;
+  box-shadow:0 0 6px var(--green);
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+h1{
+  font-family:'Exo 2',sans-serif;
+  font-size:clamp(2.8rem,6vw,5.5rem);
+  font-weight:900;
+  line-height:1.05;
+  letter-spacing:-0.02em;
+  max-width:800px;
+  animation:fadeUp 0.6s 0.1s ease both;
+}
+h1 .accent{
+  display:block;
+  color:transparent;
+  -webkit-text-stroke:1px var(--cyan);
+  opacity:0.85;
+}
+h1 .highlight{
+  display:block;
+  background:linear-gradient(90deg, var(--cyan), var(--green));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+.hero-sub{
+  font-size:1.05rem;color:var(--muted2);
+  max-width:520px;margin:1.8rem 0 2.5rem;
+  font-weight:300;line-height:1.7;
+  animation:fadeUp 0.6s 0.2s ease both;
+}
+
+.hero-actions{
+  display:flex;gap:1rem;flex-wrap:wrap;
+  animation:fadeUp 0.6s 0.3s ease both;
+}
+
+.btn-primary{
+  background:var(--cyan);color:#050608;
+  border:none;padding:0.9rem 2rem;
+  border-radius:4px;font-size:0.88rem;
+  font-weight:700;font-family:'Exo 2',sans-serif;
+  letter-spacing:0.08em;text-transform:uppercase;
+  cursor:pointer;text-decoration:none;
+  display:inline-block;
+  transition:box-shadow 0.2s, transform 0.2s;
+  box-shadow:0 0 30px rgba(0,210,255,0.4);
+}
+.btn-primary:hover{
+  box-shadow:0 0 50px rgba(0,210,255,0.7);
+  transform:translateY(-2px);
+}
+
+.btn-ghost{
+  background:transparent;color:var(--text);
+  border:1px solid var(--border2);
+  padding:0.9rem 2rem;border-radius:4px;
+  font-size:0.88rem;font-weight:600;
+  font-family:'Exo 2',sans-serif;
+  letter-spacing:0.06em;text-transform:uppercase;
+  cursor:pointer;text-decoration:none;
+  display:inline-block;
+  transition:border-color 0.2s, color 0.2s;
+}
+.btn-ghost:hover{border-color:rgba(255,255,255,0.2);color:#fff}
+
+.hero-metrics{
+  display:flex;gap:3rem;margin-top:4.5rem;flex-wrap:wrap;
+  animation:fadeUp 0.6s 0.4s ease both;
+  border-top:1px solid var(--border2);padding-top:2.5rem;
+}
+.metric{}
+.metric-val{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.8rem;font-weight:500;
+  color:var(--cyan);letter-spacing:-0.02em;
+}
+.metric-label{font-size:0.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:0.2rem}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* ──────────── TICKER ──────────── */
+.ticker{
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:0.7rem 0;overflow:hidden;
+  position:relative;z-index:1;
+}
+.ticker-inner{
+  display:flex;gap:3rem;
+  animation:ticker 20s linear infinite;
+  white-space:nowrap;
+}
+.ticker-item{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.72rem;color:var(--muted);
+  letter-spacing:0.08em;flex-shrink:0;
+}
+.ticker-item span{color:var(--cyan)}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ──────────── SECTIONS ──────────── */
+section{padding:6rem 6%;position:relative;z-index:1}
+
+.sec-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.7rem;color:var(--cyan);
+  letter-spacing:0.15em;text-transform:uppercase;
+  margin-bottom:0.8rem;display:flex;align-items:center;gap:0.5rem;
+}
+.sec-tag::before{content:'//';opacity:0.5}
+
+.sec-title{
+  font-family:'Exo 2',sans-serif;
+  font-size:clamp(1.8rem,3.5vw,2.8rem);
+  font-weight:900;letter-spacing:-0.02em;
+  line-height:1.1;margin-bottom:0.8rem;
+}
+
+.sec-sub{
+  color:var(--muted2);max-width:480px;
+  font-weight:300;line-height:1.7;margin-bottom:3rem;
+  font-size:0.95rem;
+}
+
+/* ──────────── AGENTS ──────────── */
+#agents{background:var(--bg2)}
+
+.agents-header{
+  display:flex;justify-content:space-between;
+  align-items:flex-end;flex-wrap:wrap;gap:1.5rem;margin-bottom:3rem;
+}
+
+.filter-bar{display:flex;gap:0.5rem;flex-wrap:wrap}
+
+.filter-btn{
+  background:transparent;
+  border:1px solid var(--border2);
+  color:var(--muted2);
+  padding:0.4rem 1rem;border-radius:2px;
+  font-size:0.72rem;font-weight:600;
+  font-family:'Exo 2',sans-serif;
+  letter-spacing:0.1em;text-transform:uppercase;
+  cursor:pointer;transition:all 0.2s;
+}
+.filter-btn:hover,.filter-btn.active{
+  background:rgba(0,210,255,0.08);
+  border-color:var(--cyan);color:var(--cyan);
+}
+
+.agents-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+}
+
+.agent-card{
+  background:var(--card);
+  padding:2rem;cursor:pointer;
+  transition:background 0.25s;
+  position:relative;overflow:hidden;
+}
+.agent-card::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.agent-card:hover{background:#131a25}
+.agent-card:hover::before{opacity:1}
+
+.agent-card-corner{
+  position:absolute;top:0;right:0;
+  width:0;height:0;
+  border-top:30px solid var(--border);
+  border-left:30px solid transparent;
+  transition:border-top-color 0.3s;
+}
+.agent-card:hover .agent-card-corner{border-top-color:rgba(0,210,255,0.2)}
+
+.agent-id{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem;color:var(--muted);
+  letter-spacing:0.1em;margin-bottom:1.2rem;
+  display:flex;justify-content:space-between;align-items:center;
+}
+
+.agent-status-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 5px var(--green);
+  animation:blink 2s ease-in-out infinite;
+}
+
+.agent-icon{
+  font-size:2rem;margin-bottom:1rem;
+  display:block;
+  filter:drop-shadow(0 0 8px rgba(0,210,255,0.3));
+}
+
+.agent-cat{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem;color:var(--cyan);
+  letter-spacing:0.12em;text-transform:uppercase;
+  margin-bottom:0.4rem;opacity:0.8;
+}
+
+.agent-name{
+  font-family:'Exo 2',sans-serif;
+  font-size:1.15rem;font-weight:800;
+  letter-spacing:0.02em;margin-bottom:0.6rem;
+}
+
+.agent-desc{
+  font-size:0.85rem;color:var(--muted2);
+  line-height:1.6;font-weight:300;margin-bottom:1.5rem;
+}
+
+.agent-tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.agent-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.62rem;
+  background:rgba(0,210,255,0.06);
+  border:1px solid rgba(0,210,255,0.15);
+  color:var(--muted2);
+  padding:0.2rem 0.5rem;border-radius:2px;
+  letter-spacing:0.05em;
+}
+
+.agent-footer{
+  display:flex;align-items:center;
+  justify-content:space-between;
+  border-top:1px solid var(--border2);padding-top:1.2rem;
+}
+
+.agent-price{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1rem;color:var(--cyan);font-weight:500;
+}
+.agent-price-sub{font-size:0.65rem;color:var(--muted);display:block}
+
+.agent-btn{
+  background:transparent;
+  border:1px solid var(--border2);
+  color:var(--text);
+  padding:0.4rem 0.9rem;border-radius:2px;
+  font-size:0.72rem;font-weight:600;
+  font-family:'Exo 2',sans-serif;
+  letter-spacing:0.08em;text-transform:uppercase;
+  cursor:pointer;transition:all 0.2s;
+}
+.agent-btn:hover{
+  background:rgba(0,210,255,0.1);
+  border-color:var(--cyan);color:var(--cyan);
+}
+
+.badge-hot{
+  position:absolute;top:1rem;right:2rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;
+  background:rgba(255,107,43,0.15);
+  border:1px solid rgba(255,107,43,0.4);
+  color:var(--orange);padding:0.2rem 0.5rem;border-radius:2px;
+}
+.badge-new{
+  position:absolute;top:1rem;right:2rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;
+  background:rgba(0,255,157,0.1);
+  border:1px solid rgba(0,255,157,0.3);
+  color:var(--green);padding:0.2rem 0.5rem;border-radius:2px;
+}
+
+/* CUSTOM CARD */
+.agent-card.custom-card{
+  background:repeating-linear-gradient(
+    45deg,
+    var(--card),
+    var(--card) 10px,
+    rgba(0,210,255,0.01) 10px,
+    rgba(0,210,255,0.01) 20px
+  );
+  border:1px dashed rgba(0,210,255,0.2);
+}
+
+/* ──────────── HOW ──────────── */
+#how{background:var(--bg)}
+
+.steps{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:0;
+  border:1px solid var(--border);
+  background:var(--border);
+}
+
+.step{
+  background:var(--bg);
+  padding:2.5rem 2rem;
+  position:relative;
+  transition:background 0.2s;
+}
+.step:hover{background:var(--card)}
+
+.step-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem;color:var(--muted);
+  letter-spacing:0.15em;margin-bottom:1.5rem;
+}
+
+.step-icon-wrap{
+  width:48px;height:48px;
+  border:1px solid var(--border);
+  border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;margin-bottom:1.2rem;
+  background:var(--surface);
+  transition:border-color 0.2s, box-shadow 0.2s;
+}
+.step:hover .step-icon-wrap{
+  border-color:rgba(0,210,255,0.3);
+  box-shadow:0 0 20px rgba(0,210,255,0.1);
+}
+
+.step h3{
+  font-family:'Exo 2',sans-serif;
+  font-size:0.95rem;font-weight:800;
+  letter-spacing:0.03em;margin-bottom:0.6rem;
+  text-transform:uppercase;
+}
+
+.step p{font-size:0.83rem;color:var(--muted2);line-height:1.6;font-weight:300}
+
+/* ──────────── CONFIGURATEUR ──────────── */
+#configure{background:var(--bg2)}
+
+.config-shell{
+  border:1px solid var(--border);
+  background:var(--surface);
+  border-radius:0;overflow:hidden;
+}
+
+.config-topbar{
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  padding:0.7rem 1.5rem;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.red{background:#ff5f57}
+.dot.yellow{background:#febc2e}
+.dot.green{background:#28c840}
+.config-topbar-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem;color:var(--muted);
+  letter-spacing:0.1em;margin-left:0.5rem;
+}
+
+.config-body{
+  display:grid;grid-template-columns:1fr 1fr;
+  min-height:500px;
+}
+
+.config-left{
+  padding:2.5rem;
+  border-right:1px solid var(--border);
+}
+
+.config-left h3{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.7rem;color:var(--cyan);
+  letter-spacing:0.12em;text-transform:uppercase;
+  margin-bottom:1.5rem;
+}
+
+.config-opt{
+  display:flex;align-items:center;gap:0.9rem;
+  padding:0.85rem 1rem;
+  border:1px solid var(--border2);
+  margin-bottom:0.5rem;cursor:pointer;
+  transition:all 0.2s;background:var(--bg);
+}
+.config-opt:hover,.config-opt.on{
+  border-color:rgba(0,210,255,0.3);
+  background:rgba(0,210,255,0.04);
+}
+.config-opt.on .cb{background:var(--cyan);border-color:var(--cyan);color:#000}
+
+.cb{
+  width:18px;height:18px;border:1px solid var(--muted);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.65rem;font-weight:700;
+  flex-shrink:0;transition:all 0.2s;
+  font-family:'JetBrains Mono',monospace;
+}
+
+.opt-icon{font-size:1.2rem}
+.opt-info strong{display:block;font-size:0.85rem;font-weight:700;letter-spacing:0.02em}
+.opt-info span{font-size:0.75rem;color:var(--muted);font-family:'JetBrains Mono',monospace}
+
+.config-right{padding:2.5rem;display:flex;flex-direction:column}
+.config-right h3{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.7rem;color:var(--cyan);
+  letter-spacing:0.12em;text-transform:uppercase;
+  margin-bottom:1.5rem;
+}
+
+.config-terminal{
+  flex:1;background:var(--bg);
+  border:1px solid var(--border);
+  padding:1.5rem;font-family:'JetBrains Mono',monospace;
+  font-size:0.78rem;min-height:220px;
+  margin-bottom:1.5rem;overflow-y:auto;
+}
+.t-line{margin-bottom:0.4rem;color:var(--muted2)}
+.t-line .t-key{color:var(--muted)}
+.t-line .t-val{color:var(--cyan)}
+.t-line .t-ok{color:var(--green)}
+.t-line .t-total{color:var(--text);font-weight:500}
+.t-divider{border:none;border-top:1px solid var(--border);margin:0.8rem 0}
+
+.config-submit{
+  background:var(--cyan);color:#050608;border:none;
+  padding:1rem;font-size:0.85rem;font-weight:800;
+  font-family:'Exo 2',sans-serif;
+  letter-spacing:0.1em;text-transform:uppercase;
+  cursor:pointer;
+  transition:box-shadow 0.2s, transform 0.2s;
+  box-shadow:0 0 25px rgba(0,210,255,0.35);
+}
+.config-submit:hover{
+  box-shadow:0 0 45px rgba(0,210,255,0.6);
+  transform:translateY(-1px);
+}
+
+/* ──────────── MODAL ──────────── */
+.overlay{
+  position:fixed;inset:0;
+  background:rgba(5,6,8,0.85);
+  backdrop-filter:blur(12px);
+  z-index:200;
+  display:flex;align-items:center;justify-content:center;
+  padding:2rem;opacity:0;pointer-events:none;
+  transition:opacity 0.3s;
+}
+.overlay.show{opacity:1;pointer-events:all}
+
+.modal{
+  background:var(--surface);
+  border:1px solid var(--border);
+  max-width:500px;width:100%;
+  transform:translateY(16px);transition:transform 0.3s;
+}
+.overlay.show .modal{transform:translateY(0)}
+
+.modal-head{
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  padding:1rem 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-head-title{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.72rem;color:var(--cyan);
+  letter-spacing:0.1em;text-transform:uppercase;
+}
+.modal-close-x{
+  background:none;border:none;color:var(--muted);
+  font-size:1.2rem;cursor:pointer;line-height:1;
+  transition:color 0.2s;
+}
+.modal-close-x:hover{color:var(--text)}
+
+.modal-body{padding:2rem}
+.modal-body h3{
+  font-family:'Exo 2',sans-serif;
+  font-size:1.3rem;font-weight:900;
+  letter-spacing:0.02em;margin-bottom:0.4rem;
+}
+.modal-body p{color:var(--muted2);font-size:0.85rem;margin-bottom:1.8rem}
+
+.fg{margin-bottom:0.9rem}
+.fg label{
+  display:block;font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem;color:var(--muted);
+  letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.4rem;
+}
+.fg input,.fg textarea,.fg select{
+  width:100%;background:var(--bg);
+  border:1px solid var(--border2);
+  color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.82rem;padding:0.75rem 1rem;
+  outline:none;transition:border-color 0.2s;
+  border-radius:0;
+}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--cyan)}
+.fg textarea{resize:vertical;min-height:80px}
+
+.modal-actions{display:flex;gap:0.6rem;margin-top:1.5rem}
+.btn-cancel{
+  flex:1;background:transparent;
+  border:1px solid var(--border2);color:var(--muted2);
+  padding:0.85rem;font-size:0.82rem;
+  font-family:'Exo 2',sans-serif;font-weight:600;
+  letter-spacing:0.06em;text-transform:uppercase;
+  cursor:pointer;transition:border-color 0.2s;
+}
+.btn-cancel:hover{border-color:rgba(255,255,255,0.2);color:var(--text)}
+
+/* ──────────── FOOTER ──────────── */
+footer{
+  background:var(--bg);
+  border-top:1px solid var(--border);
+  padding:2.5rem 6%;
+  display:flex;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;gap:1rem;
+  position:relative;z-index:1;
+}
+.footer-right{text-align:right}
+footer p{font-size:0.78rem;color:var(--muted)}
+.footer-email{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.75rem;color:var(--cyan);
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:rgba(0,210,255,0.2);border-radius:2px}
+
+@media(max-width:768px){
+  nav ul{display:none}
+  .config-body{grid-template-columns:1fr}
+  .config-left{border-right:none;border-bottom:1px solid var(--border)}
+  .hero{align-items:center;text-align:center}
+  .hero-sub{margin-left:auto;margin-right:auto}
+  .hero-actions{justify-content:center}
+  body{cursor:auto}
+  .cursor,.cursor-ring{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="ring"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">AUTO<em>FLOW</em></div>
+  </div>
+  <ul>
+    <li><a href="#agents">Agents</a></li>
+    <li><a href="#how">Processus</a></li>
+    <li><a href="#configure">Configurateur</a></li>
+    <li><a href="#contact" class="nav-cta">Démarrer</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-orb"></div>
+  <div class="hero-lines">
+    <div class="hero-line"></div><div class="hero-line"></div>
+    <div class="hero-line"></div><div class="hero-line"></div>
+    <div class="hero-line"></div>
+  </div>
+
+  <div class="status-pill">
+    <span class="status-dot"></span>
+    SYSTÈME OPÉRATIONNEL · AGENTS DISPONIBLES
+  </div>
+
+  <h1>
+    Vos tâches répétitives
+    <span class="accent">automatisées.</span>
+    <span class="highlight">Votre temps libéré.</span>
+  </h1>
+
+  <p class="hero-sub">
+    AutoFlow crée des agents IA sur mesure qui travaillent à votre place —
+    emails, prospection, comptabilité, support client.
+    Vous dites ce qu'il vous faut. On le construit.
+  </p>
+
+  <div class="hero-actions">
+    <a href="#agents" class="btn-primary">Voir les agents →</a>
+    <a href="#configure" class="btn-ghost">Configurer le mien</a>
+  </div>
+
+  <div class="hero-metrics">
+    <div class="metric">
+      <div class="metric-val">24h</div>
+      <div class="metric-label">Délai de livraison</div>
+    </div>
+    <div class="metric">
+      <div class="metric-val">100%</div>
+      <div class="metric-label">Sur mesure</div>
+    </div>
+    <div class="metric">
+      <div class="metric-val">0€</div>
+      <div class="metric-label">Abonnement requis</div>
+    </div>
+    <div class="metric">
+      <div class="metric-val">∞</div>
+      <div class="metric-label">Tâches automatisées</div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item">AGENT ACTIF <span>EMAIL_MANAGER</span></span>
+    <span class="ticker-item">STATUT <span>OPÉRATIONNEL</span></span>
+    <span class="ticker-item">TÂCHES AUTOMATISÉES <span>+2,400 / JOUR</span></span>
+    <span class="ticker-item">DÉLAI LIVRAISON <span>24H</span></span>
+    <span class="ticker-item">SUPPORT <span>INCLUS 30 JOURS</span></span>
+    <span class="ticker-item">INSTALLATION <span>OFFERTE</span></span>
+    <span class="ticker-item">AGENT ACTIF <span>EMAIL_MANAGER</span></span>
+    <span class="ticker-item">STATUT <span>OPÉRATIONNEL</span></span>
+    <span class="ticker-item">TÂCHES AUTOMATISÉES <span>+2,400 / JOUR</span></span>
+    <span class="ticker-item">DÉLAI LIVRAISON <span>24H</span></span>
+    <span class="ticker-item">SUPPORT <span>INCLUS 30 JOURS</span></span>
+    <span class="ticker-item">INSTALLATION <span>OFFERTE</span></span>
+  </div>
+</div>
+
+<!-- AGENTS -->
+<section id="agents">
+  <div class="agents-header">
+    <div>
+      <div class="sec-tag">Catalogue agents</div>
+      <h2 class="sec-title">Choisissez votre agent</h2>
+      <p class="sec-sub">Chaque agent est connecté à vos outils existants et configuré pour votre secteur.</p>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterAgents('all',this)">Tous</button>
+      <button class="filter-btn" onclick="filterAgents('com',this)">Communication</button>
+      <button class="filter-btn" onclick="filterAgents('biz',this)">Commercial</button>
+      <button class="filter-btn" onclick="filterAgents('ops',this)">Gestion</button>
+      <button class="filter-btn" onclick="filterAgents('cnt',this)">Contenu</button>
+    </div>
+  </div>
+
+  <div class="agents-grid" id="agentsGrid">
+
+    <div class="agent-card" data-cat="com" onclick="openModal('EMAIL_MANAGER')">
+      <div class="badge-hot">★ POPULAIRE</div>
+      <div class="agent-id"><span>AF-001</span><span class="agent-status-dot"></span></div>
+      <span class="agent-icon">📧</span>
+      <div class="agent-cat">Communication</div>
+      <div class="agent-name">Email Manager</div>
+      <div class="agent-desc">Lit, trie, répond et relance vos emails automatiquement. Votre boîte mail se gère seule, 24h/24.</div>
+      <div class="agent-tags">
+        <span class="agent-tag">Gmail</span>
+        <span class="agent-tag">Outlook</span>
+        <span class="agent-tag">Relances auto</span>
+      </div>
+      <div class="agent-footer">
+        <div class="agent-price">149€ <span class="agent-price-sub">paiement unique</span></div>
+        <button class="agent-btn">Commander</button>
+      </div>
+      <div class="agent-card-corner"></div>
+    </div>
+
+    <div class="agent-card" data-cat="biz" onclick="openModal('PROSPECTEUR_COMMERCIAL')">
+      <div class="agent-id"><span>AF-002</span><span class="agent-status-dot"></span></div>
+      <span class="agent-icon">🎯</span>
+      <div class="agent-cat">Commercial</div>
+      <div class="agent-name">Prospecteur Commercial</div>
+      <div class="agent-desc">Trouve vos prospects, envoie des messages personnalisés et gère les relances sur LinkedIn ou email.</div>
+      <div class="agent-tags">
+        <span class="agent-tag">LinkedIn</span>
+        <span class="agent-tag">Email séquences</span>
+        <span class="agent-tag">CRM</span>
+      </div>
+      <div class="agent-footer">
+        <div class="agent-price">249€ <span class="agent-price-sub">paiement unique</span></div>
+        <button class="agent-btn">Commander</button>
+      </div>
+      <div class="agent-card-corner"></div>
+    </div>
+
+    <div class="agent-card" data-cat="cnt" onclick="openModal('CRÉATEUR_CONTENU')">
+      <div class="badge-new">NOUVEAU</div>
+      <div class="agent-id"><span>AF-003</span><span class="agent-status-dot"></span></div>
+      <span class="agent-icon">✍️</span>
+      <div class="agent-cat">Contenu</div>
+      <div class="agent-name">Créateur de Contenu</div>
+      <div class="agent-desc">Génère posts LinkedIn, articles de blog, descriptions produits selon votre voix et votre secteur.</div>
+      <div class="agent-tags">
+        <span class="agent-tag">LinkedIn</span>
+        <span class="agent-tag">Blog</span>
+        <span class="agent-tag">SEO</span>
+      </div>
+      <div class="agent-footer">
+        <div class="agent-price">199€ <span class="agent-price-sub">paiement unique</span></div>
+        <button class="agent-btn">Commander</button>
+      </div>
+      <div class="agent-card-corner"></div>
+    </div>
+
+    <div class="agent-card" data-cat="ops" onclick="openModal('ASSISTANT_COMPTABLE')">
+      <div class="agent-id"><span>AF-004</span><span class="agent-status-dot"></span></div>
+      <span class="agent-icon">📊</span>
+      <div class="agent-cat">Gestion</div>
+      <div class="agent-name">Assistant Comptable</div>
+      <div class="agent-desc">Catégorise vos dépenses, suit vos factures et prépare vos exports comptables automatiquement.</div>
+      <div class="agent-tags">
+        <span class="agent-tag">Factures</span>
+        <span class="agent-tag">Exports</span>
+        <span class="agent-tag">Reporting</span>
+      </div>
+      <div class="agent-footer">
+        <div class="agent-price">299€ <span class="agent-price-sub">paiement unique</span></div>
+        <button class="agent-btn">Commander</button>
+      </div>
+      <div class="agent-card-corner"></div>
+    </div>
+
+    <div class="agent-card" data-cat="com" onclick="openModal('SUPPORT_CLIENT')">
+      <div class="agent-id"><span>AF-005</span><span class="agent-status-dot"></span></div>
+      <span class="agent-icon">💬</span>
+      <div class="agent-cat">Communication</div>
+      <div class="agent-name">Support Client 24/7</div>
+      <div class="agent-desc">Répond à vos clients sur WhatsApp, votre site ou Instagram, même la nuit et le week-end.</div>
+      <div class="agent-tags">
+        <span class="agent-tag">WhatsApp</span>
+        <span class="agent-tag">Site web</span>
+        <span class="agent-tag">Instagram</span>
+      </div>
+      <div class="agent-footer">
+        <div class="agent-price">349€ <span class="agent-price-sub">paiement unique</span></div>
+        <button class="agent-btn">Commander</button>
+      </div>
+      <div class="agent-card-corner"></div>
+    </div>
+
+    <div class="agent-card" data-cat="ops" onclick="openModal('PLANIFICATEUR_AGENDA')">
+      <div class="agent-id"><span>AF-006</span><span class="agent-status-dot"></span></div>
+      <span class="agent-icon">📅</span>
+      <div class="agent-cat">Gestion</div>
+      <div class="agent-name">Planificateur Agenda</div>
+      <div class="agent-desc">Prend rendez-vous, envoie les rappels et gère les annulations sans que vous n'ayez à intervenir.</div>
+      <div class="agent-tags">
+        <span class="agent-tag">Google Cal</span>
+        <span class="agent-tag">Rappels SMS</span>
+        <span class="agent-tag">Auto-booking</span>
+      </div>
+      <div class="agent-footer">
+        <div class="agent-price">199€ <span class="agent-price-sub">paiement unique</span></div>
+        <button class="agent-btn">Commander</button>
+      </div>
+      <div class="agent-card-corner"></div>
+    </div>
+
+    <div class="agent-card custom-card" onclick="openModal('AGENT_SUR_MESURE')">
+      <div class="agent-id"><span>AF-XXX</span></div>
+      <span class="agent-icon">⚡</span>
+      <div class="agent-cat" style="color:var(--muted2)">Sur mesure</div>
+      <div class="agent-name">Votre agent unique</div>
+      <div class="agent-desc">Un besoin qui n'est pas dans la liste ? On conçoit l'agent entièrement sur mesure, connecté à vos outils.</div>
+      <div class="agent-tags">
+        <span class="agent-tag">100% custom</span>
+        <span class="agent-tag">Devis gratuit</span>
+      </div>
+      <div class="agent-footer">
+        <div class="agent-price" style="color:var(--muted2)">Sur devis<span class="agent-price-sub">réponse sous 24h</span></div>
+        <button class="agent-btn">Nous écrire</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- HOW -->
+<section id="how">
+  <div class="sec-tag">Processus</div>
+  <h2 class="sec-title">De votre besoin à votre agent</h2>
+  <p class="sec-sub">Pas besoin d'être technique. On gère tout, vous n'avez qu'à valider.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">ÉTAPE_01</div>
+      <div class="step-icon-wrap">🗣️</div>
+      <h3>Brief</h3>
+      <p>Vous décrivez votre besoin, vos outils actuels et vos contraintes. Un formulaire simple suffit.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">ÉTAPE_02</div>
+      <div class="step-icon-wrap">⚙️</div>
+      <h3>Construction</h3>
+      <p>On configure et programme votre agent IA, connecté à vos outils existants. Livré sous 24 à 72h.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">ÉTAPE_03</div>
+      <div class="step-icon-wrap">🧪</div>
+      <h3>Validation</h3>
+      <p>Vous testez avec vos vraies données. On ajuste gratuitement jusqu'à ce que ce soit parfait.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">ÉTAPE_04</div>
+      <div class="step-icon-wrap">🚀</div>
+      <h3>Déploiement</h3>
+      <p>Votre agent tourne en autonomie. Vous récupérez des heures chaque semaine. Garanti.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CONFIGURATEUR -->
+<section id="configure">
+  <div class="sec-tag">Configurateur</div>
+  <h2 class="sec-title">Créez votre pack agents</h2>
+  <p class="sec-sub">Sélectionnez les agents dont vous avez besoin et obtenez votre devis en temps réel.</p>
+
+  <div class="config-shell">
+    <div class="config-topbar">
+      <div class="dot red"></div>
+      <div class="dot yellow"></div>
+      <div class="dot green"></div>
+      <span class="config-topbar-label">autoflow-configurator v1.0</span>
+    </div>
+    <div class="config-body">
+      <div class="config-left">
+        <h3>// Sélectionner les agents</h3>
+
+        <div class="config-opt on" data-price="149" onclick="toggleOpt(this)">
+          <div class="cb">✓</div>
+          <div class="opt-icon">📧</div>
+          <div class="opt-info">
+            <strong>Email Manager</strong>
+            <span>149€ — Gestion emails auto</span>
+          </div>
+        </div>
+        <div class="config-opt" data-price="249" onclick="toggleOpt(this)">
+          <div class="cb"></div>
+          <div class="opt-icon">🎯</div>
+          <div class="opt-info">
+            <strong>Prospecteur Commercial</strong>
+            <span>249€ — Prospection automatique</span>
+          </div>
+        </div>
+        <div class="config-opt" data-price="199" onclick="toggleOpt(this)">
+          <div class="cb"></div>
+          <div class="opt-icon">✍️</div>
+          <div class="opt-info">
+            <strong>Créateur de Contenu</strong>
+            <span>199€ — Posts & articles auto</span>
+          </div>
+        </div>
+        <div class="config-opt" data-price="299" onclick="toggleOpt(this)">
+          <div class="cb"></div>
+          <div class="opt-icon">📊</div>
+          <div class="opt-info">
+            <strong>Assistant Comptable</strong>
+            <span>299€ — Gestion financière</span>
+          </div>
+        </div>
+        <div class="config-opt" data-price="349" onclick="toggleOpt(this)">
+          <div class="cb"></div>
+          <div class="opt-icon">💬</div>
+          <div class="opt-info">
+            <strong>Support Client 24/7</strong>
+            <span>349€ — Chatbot multi-canal</span>
+          </div>
+        </div>
+        <div class="config-opt" data-price="199" onclick="toggleOpt(this)">
+          <div class="cb"></div>
+          <div class="opt-icon">📅</div>
+          <div class="opt-info">
+            <strong>Planificateur Agenda</strong>
+            <span>199€ — Prise de RDV auto</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="config-right">
+        <h3>// Devis en temps réel</h3>
+        <div class="config-terminal" id="terminal">
+          <div class="t-line"><span class="t-key">$ autoflow </span><span class="t-val">quote --generate</span></div>
+          <div class="t-line" style="margin-top:0.8rem"><span class="t-key">agent_selected:</span> <span class="t-val">"Email Manager"</span></div>
+          <hr class="t-divider">
+          <div class="t-line"><span class="t-key">installation:  </span><span class="t-ok">OFFERTE</span></div>
+          <div class="t-line"><span class="t-key">support_30j:   </span><span class="t-ok">INCLUS</span></div>
+          <div class="t-line"><span class="t-key">ajustements:   </span><span class="t-ok">ILLIMITÉS</span></div>
+          <hr class="t-divider">
+          <div class="t-line"><span class="t-key">TOTAL ESTIMÉ:  </span><span class="t-total" id="totalDisplay">149€</span></div>
+        </div>
+        <button class="config-submit" onclick="openModal('Configuration personnalisée')">
+          → Demander ce devis
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODAL CONTACT -->
+<div class="overlay" id="overlay" onclick="closeOutside(event)">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <span class="modal-head-title" id="modalLabel">NOUVELLE DEMANDE</span>
+      <button class="modal-close-x" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <h3 id="modalTitle">Démarrer votre projet</h3>
+      <p id="modalDesc">Remplissez ce formulaire. Nous vous répondons sous 24h pour démarrer.</p>
+      <div class="fg">
+        <label>Prénom & Nom</label>
+        <input type="text" placeholder="Jean Dupont">
+      </div>
+      <div class="fg">
+        <label>Email</label>
+        <input type="email" placeholder="jean@monentreprise.fr">
+      </div>
+      <div class="fg">
+        <label>Secteur d'activité</label>
+        <input type="text" placeholder="Ex : Plomberie, E-commerce, Conseil…">
+      </div>
+      <div class="fg">
+        <label>Décrivez votre besoin</label>
+        <textarea placeholder="Ex : Je veux automatiser mes réponses email et mes relances clients…"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+        <button class="btn-primary" style="flex:2;border:none;font-size:0.82rem;letter-spacing:0.08em;" onclick="submitForm()">Envoyer →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">AUTO<em>FLOW</em></div>
+  </div>
+  <p style="color:var(--muted);font-size:0.75rem">© 2025 AutoFlow · Agents IA sur mesure</p>
+  <div class="footer-right">
+    <div class="footer-email">contact@autoflow.fr</div>
+    <p>Micro-entreprise française</p>
+  </div>
+</footer>
+
+<script>
+// CURSOR
+const cur = document.getElementById('cur');
+const ring = document.getElementById('ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=(mx-5)+'px';cur.style.top=(my-5)+'px'});
+setInterval(()=>{rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=(rx-18)+'px';ring.style.top=(ry-18)+'px'},16);
+document.querySelectorAll('button,a,.agent-card,.config-opt').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.transform='scale(2)';ring.style.width='60px';ring.style.height='60px'});
+  el.addEventListener('mouseleave',()=>{cur.style.transform='scale(1)';ring.style.width='36px';ring.style.height='36px'});
+});
+
+// FILTER
+function filterAgents(cat,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.agent-card').forEach(c=>{
+    if(cat==='all'||c.dataset.cat===cat){c.style.display=''}
+    else{c.style.display='none'}
+  });
+}
+
+// CONFIGURATEUR
+function toggleOpt(el){
+  el.classList.toggle('on');
+  const cb=el.querySelector('.cb');
+  cb.textContent=el.classList.contains('on')?'✓':'';
+  updateTerminal();
+}
+
+function updateTerminal(){
+  const selected=document.querySelectorAll('.config-opt.on');
+  let total=0;
+  let lines='<div class="t-line"><span class="t-key">$ autoflow </span><span class="t-val">quote --generate</span></div>';
+  lines+='<div style="margin-top:0.8rem">';
+  if(selected.length===0){
+    lines+='<div class="t-line" style="color:var(--muted)">Aucun agent sélectionné…</div>';
+  } else {
+    selected.forEach(opt=>{
+      const price=parseInt(opt.dataset.price);
+      total+=price;
+      const name=opt.querySelector('strong').textContent;
+      const icon=opt.querySelector('.opt-icon').textContent;
+      lines+=`<div class="t-line"><span class="t-key">${icon} ${name}:</span> <span class="t-val">${price}€</span></div>`;
+    });
+  }
+  lines+='</div>';
+  lines+='<hr class="t-divider">';
+  lines+='<div class="t-line"><span class="t-key">installation:  </span><span class="t-ok">OFFERTE</span></div>';
+  lines+='<div class="t-line"><span class="t-key">support_30j:   </span><span class="t-ok">INCLUS</span></div>';
+  lines+='<div class="t-line"><span class="t-key">ajustements:   </span><span class="t-ok">ILLIMITÉS</span></div>';
+  lines+='<hr class="t-divider">';
+  lines+=`<div class="t-line"><span class="t-key">TOTAL ESTIMÉ:  </span><span class="t-total">${total}€</span></div>`;
+  document.getElementById('terminal').innerHTML=lines;
+}
+
+// MODAL
+function openModal(name){
+  const label=name.replace(/_/g,' ');
+  document.getElementById('modalLabel').textContent='DEMANDE · '+label;
+  document.getElementById('modalTitle').textContent=name==='Configuration personnalisée'?'Demander votre devis':'Commander : '+label;
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal(){document.getElementById('overlay').classList.remove('show')}
+function closeOutside(e){if(e.target===document.getElementById('overlay'))closeModal()}
+
+function submitForm(){
+  document.getElementById('modal').innerHTML=`
+    <div class="modal-head">
+      <span class="modal-head-title">DEMANDE ENVOYÉE</span>
+      <button class="modal-close-x" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:3rem 2rem">
+      <div style="font-size:3rem;margin-bottom:1rem">✅</div>
+      <h3 style="margin-bottom:0.5rem">Demande reçue !</h3>
+      <p>Nous vous contactons sous 24h pour démarrer votre projet AutoFlow.</p>
+      <button class="btn-primary" style="margin-top:2rem;border:none;font-size:0.82rem;letter-spacing:0.08em" onclick="closeModal()">Fermer</button>
+    </div>
+  `;
+}
+
+// SCROLL ANIMATIONS
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.style.opacity='1';
+      e.target.style.transform='translateY(0)';
+    }
+  });
+},{threshold:0.08});
+
+document.querySelectorAll('.agent-card,.step').forEach((el,i)=>{
+  el.style.opacity='0';
+  el.style.transform='translateY(24px)';
+  el.style.transition=`opacity 0.5s ${i*0.07}s ease, transform 0.5s ${i*0.07}s ease`;
+  obs.observe(el);
+});
+</script>
+</body>
+</html>
