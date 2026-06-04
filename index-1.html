@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apex Family - Soirée Racing</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,900;1,700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  .poster {
+    width: 430px;
+    height: 762px;
+    position: relative;
+    overflow: hidden;
+    background: #050505;
+  }
+
+  /* === ROAD BACKGROUND === */
+  .road-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(170deg, #000 0%, #0d0d0d 40%, #111 60%, #000 100%);
+  }
+
+  /* Perspective road lines */
+  .road-lines {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 55%;
+  }
+
+  .road-lines::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 100%;
+    background:
+      linear-gradient(to top, rgba(255,80,0,0.08) 0%, transparent 60%);
+  }
+
+  /* Grid perspective floor */
+  .grid-floor {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background-image:
+      linear-gradient(rgba(255,80,0,0.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,80,0,0.15) 1px, transparent 1px);
+    background-size: 40px 40px;
+    transform: perspective(300px) rotateX(55deg);
+    transform-origin: bottom center;
+    opacity: 0.5;
+  }
+
+  /* Speed lines */
+  .speed-lines {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .speed-line {
+    position: absolute;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,80,0,0.6), transparent);
+    animation: speedLine 1.8s linear infinite;
+    opacity: 0;
+  }
+
+  .speed-line:nth-child(1)  { width: 180px; top: 18%; left: -180px; animation-delay: 0s; }
+  .speed-line:nth-child(2)  { width: 120px; top: 28%; left: -120px; animation-delay: 0.3s; }
+  .speed-line:nth-child(3)  { width: 200px; top: 35%; right: -200px; animation-delay: 0.6s; transform: scaleX(-1); }
+  .speed-line:nth-child(4)  { width: 90px;  top: 45%; left: -90px;  animation-delay: 0.9s; }
+  .speed-line:nth-child(5)  { width: 150px; top: 55%; right: -150px;animation-delay: 0.15s;transform: scaleX(-1); }
+  .speed-line:nth-child(6)  { width: 110px; top: 22%; right: -110px;animation-delay: 0.75s;transform: scaleX(-1); }
+  .speed-line:nth-child(7)  { width: 70px;  top: 62%; left: -70px;  animation-delay: 1.2s; }
+  .speed-line:nth-child(8)  { width: 130px; top: 70%; right: -130px;animation-delay: 0.45s;transform: scaleX(-1); }
+
+  @keyframes speedLine {
+    0%   { opacity: 0; transform: translateX(0); }
+    10%  { opacity: 1; }
+    80%  { opacity: 0.8; }
+    100% { opacity: 0; transform: translateX(700px); }
+  }
+
+  .speed-line:nth-child(odd) { animation-name: speedLineRight; }
+  @keyframes speedLineRight {
+    0%   { opacity: 0; }
+    10%  { opacity: 1; }
+    80%  { opacity: 0.8; }
+    100% { opacity: 0; transform: translateX(-700px); }
+  }
+
+  /* === GLOW EFFECTS === */
+  .glow-top {
+    position: absolute;
+    top: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 500px;
+    height: 300px;
+    background: radial-gradient(ellipse, rgba(255,60,0,0.25) 0%, transparent 70%);
+    animation: pulseGlow 3s ease-in-out infinite alternate;
+  }
+
+  .glow-bottom {
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 250px;
+    background: radial-gradient(ellipse, rgba(255,100,0,0.2) 0%, transparent 70%);
+    animation: pulseGlow 2.5s ease-in-out infinite alternate-reverse;
+  }
+
+  @keyframes pulseGlow {
+    from { opacity: 0.6; transform: translateX(-50%) scale(1); }
+    to   { opacity: 1;   transform: translateX(-50%) scale(1.08); }
+  }
+
+  /* === HEADER BAND === */
+  .header-band {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #ff3000, #ff8c00, #ff3000);
+    animation: scanline 2s linear infinite;
+    background-size: 200% 100%;
+  }
+
+  @keyframes scanline {
+    0%   { background-position: 0% 0%; }
+    100% { background-position: 200% 0%; }
+  }
+
+  /* === CONTENT === */
+  .content {
+    position: relative;
+    z-index: 10;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 24px;
+  }
+
+  /* Community tag */
+  .community-tag {
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,80,0,0.4);
+    border-radius: 40px;
+    padding: 6px 16px;
+    backdrop-filter: blur(8px);
+  }
+
+  .community-dot {
+    width: 8px;
+    height: 8px;
+    background: #ff5000;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff5000;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+  }
+
+  .community-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: #ff8c50;
+    text-transform: uppercase;
+  }
+
+  /* Main title block */
+  .title-block {
+    margin-top: 30px;
+    text-align: center;
+    animation: fadeSlideDown 0.8s ease forwards;
+  }
+
+  @keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .soiree-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 6px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+  }
+
+  .event-number {
+    position: absolute;
+    top: -8px;
+    right: -50px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    color: rgba(255,80,0,0.12);
+    line-height: 1;
+    user-select: none;
+  }
+
+  .main-title-wrap {
+    position: relative;
+    display: inline-block;
+  }
+
+  .main-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 86px;
+    line-height: 0.9;
+    color: #fff;
+    text-shadow:
+      0 0 30px rgba(255,80,0,0.6),
+      0 0 60px rgba(255,80,0,0.3),
+      2px 2px 0 #ff3000;
+    letter-spacing: 3px;
+  }
+
+  .racing-accent {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    line-height: 1;
+    color: #ff5000;
+    letter-spacing: 8px;
+    text-shadow: 0 0 20px rgba(255,80,0,0.8);
+  }
+
+  /* Divider */
+  .divider {
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .div-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,80,0,0.7), transparent);
+  }
+
+  .div-icon {
+    font-size: 22px;
+    filter: drop-shadow(0 0 8px #ff5000);
+    animation: revIcon 1s 0.5s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes revIcon {
+    to { opacity: 1; }
+  }
+
+  /* Car SVG placeholder (stylized speedometer) */
+  .car-visual {
+    margin-top: 16px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    position: relative;
+  }
+
+  .speedometer {
+    width: 200px;
+    height: 110px;
+    position: relative;
+  }
+
+  .speedo-arc {
+    position: absolute;
+    inset: 0;
+    border: 3px solid transparent;
+    border-top-color: #ff5000;
+    border-right-color: #ff5000;
+    border-radius: 50%;
+    animation: spinArc 2s linear infinite;
+    box-shadow: 0 0 15px #ff5000;
+  }
+
+  @keyframes spinArc {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* Date block */
+  .date-block {
+    margin-top: 20px;
+    width: 100%;
+    background: rgba(255,80,0,0.08);
+    border: 1px solid rgba(255,80,0,0.35);
+    border-radius: 12px;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 1s 0.4s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  .date-item {
+    text-align: center;
+  }
+
+  .date-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+  }
+
+  .date-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: #fff;
+    line-height: 1.1;
+  }
+
+  .date-value span {
+    color: #ff5000;
+  }
+
+  .date-sep {
+    width: 1px;
+    height: 40px;
+    background: rgba(255,80,0,0.3);
+  }
+
+  /* Game badge */
+  .game-badge {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 12px 20px;
+    width: 100%;
+    animation: fadeIn 1s 0.6s ease forwards;
+    opacity: 0;
+  }
+
+  .game-icon {
+    font-size: 28px;
+    filter: drop-shadow(0 0 6px rgba(255,80,0,0.8));
+  }
+
+  .game-info {
+    flex: 1;
+  }
+
+  .game-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+  }
+
+  .game-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 20px;
+    color: #fff;
+    letter-spacing: 1px;
+    line-height: 1.1;
+  }
+
+  .game-name em {
+    color: #ff5000;
+    font-style: normal;
+  }
+
+  .platform-icons {
+    display: flex;
+    gap: 6px;
+    font-size: 16px;
+  }
+
+  /* Rules strip */
+  .rules-strip {
+    margin-top: 14px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    animation: fadeIn 1s 0.8s ease forwards;
+    opacity: 0;
+  }
+
+  .rule-chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 6px;
+    text-align: center;
+  }
+
+  .rule-icon { font-size: 16px; display: block; }
+  .rule-text {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.5px;
+    margin-top: 3px;
+  }
+
+  /* CTA */
+  .cta-block {
+    margin-top: 16px;
+    width: 100%;
+    animation: fadeIn 1s 1s ease forwards;
+    opacity: 0;
+  }
+
+  .cta-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #ff3000 0%, #ff7000 100%);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 30px rgba(255,80,0,0.4);
+  }
+
+  .cta-btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shine 2.5s linear infinite;
+  }
+
+  @keyframes shine {
+    to { left: 200%; }
+  }
+
+  .cta-top {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+  }
+
+  .cta-main {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: #fff;
+    letter-spacing: 2px;
+  }
+
+  .cta-link {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 2px;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: auto;
+    padding-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    animation: fadeIn 1s 1.2s ease forwards;
+    opacity: 0;
+  }
+
+  .footer-text {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.25);
+    text-transform: uppercase;
+  }
+
+  .footer-dot { color: #ff5000; }
+
+  /* Checkered flag corners */
+  .corner-flag {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    z-index: 20;
+  }
+
+  .corner-flag.tl { top: 8px; left: 8px; }
+  .corner-flag.tr { top: 8px; right: 8px; transform: scaleX(-1); }
+
+  .checker {
+    display: grid;
+    grid-template-columns: repeat(4, 12px);
+    grid-template-rows: repeat(4, 12px);
+    opacity: 0.4;
+  }
+
+  .checker-cell {
+    width: 12px;
+    height: 12px;
+  }
+
+  .checker-cell.b { background: #fff; }
+  .checker-cell.w { background: transparent; }
+
+  /* Bottom bar */
+  .bottom-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff3000, #ff8c00, #ff3000);
+  }
+</style>
+</head>
+<body>
+<div class="poster">
+  <!-- Backgrounds -->
+  <div class="road-bg"></div>
+  <div class="grid-floor"></div>
+
+  <!-- Glows -->
+  <div class="glow-top"></div>
+  <div class="glow-bottom"></div>
+
+  <!-- Speed lines -->
+  <div class="speed-lines">
+    <div class="speed-line"></div>
+    <div class="speed-line"></div>
+    <div class="speed-line"></div>
+    <div class="speed-line"></div>
+    <div class="speed-line"></div>
+    <div class="speed-line"></div>
+    <div class="speed-line"></div>
+    <div class="speed-line"></div>
+  </div>
+
+  <!-- Header band -->
+  <div class="header-band"></div>
+
+  <!-- Checkered corners -->
+  <div class="corner-flag tl">
+    <div class="checker">
+      <div class="checker-cell b"></div><div class="checker-cell w"></div><div class="checker-cell b"></div><div class="checker-cell w"></div>
+      <div class="checker-cell w"></div><div class="checker-cell b"></div><div class="checker-cell w"></div><div class="checker-cell b"></div>
+      <div class="checker-cell b"></div><div class="checker-cell w"></div><div class="checker-cell b"></div><div class="checker-cell w"></div>
+      <div class="checker-cell w"></div><div class="checker-cell b"></div><div class="checker-cell w"></div><div class="checker-cell b"></div>
+    </div>
+  </div>
+  <div class="corner-flag tr">
+    <div class="checker">
+      <div class="checker-cell b"></div><div class="checker-cell w"></div><div class="checker-cell b"></div><div class="checker-cell w"></div>
+      <div class="checker-cell w"></div><div class="checker-cell b"></div><div class="checker-cell w"></div><div class="checker-cell b"></div>
+      <div class="checker-cell b"></div><div class="checker-cell w"></div><div class="checker-cell b"></div><div class="checker-cell w"></div>
+      <div class="checker-cell w"></div><div class="checker-cell b"></div><div class="checker-cell w"></div><div class="checker-cell b"></div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Community tag -->
+    <div class="community-tag">
+      <div class="community-dot"></div>
+      <span class="community-name">🌺🌴 Apex Family 🌴🌺</span>
+    </div>
+
+    <!-- Title -->
+    <div class="title-block" style="margin-top:24px; text-align:center;">
+      <div class="soiree-label">Première soirée officielle</div>
+      <div class="main-title-wrap">
+        <div class="main-title">SOIRÉE</div>
+        <div class="event-number">#1</div>
+      </div>
+      <div class="racing-accent">RACING</div>
+    </div>
+
+    <!-- Divider -->
+    <div class="divider">
+      <div class="div-line"></div>
+      <div class="div-icon">🏁</div>
+      <div class="div-line"></div>
+    </div>
+
+    <!-- Date block -->
+    <div class="date-block">
+      <div class="date-item">
+        <div class="date-label">Date</div>
+        <div class="date-value">12 <span>JUIN</span></div>
+      </div>
+      <div class="date-sep"></div>
+      <div class="date-item">
+        <div class="date-label">Heure</div>
+        <div class="date-value"><span>21</span>H30</div>
+      </div>
+      <div class="date-sep"></div>
+      <div class="date-item">
+        <div class="date-label">Édition</div>
+        <div class="date-value"><span>#</span>01</div>
+      </div>
+    </div>
+
+    <!-- Game badge -->
+    <div class="game-badge">
+      <div class="game-icon">🏎️</div>
+      <div class="game-info">
+        <div class="game-label">Sur le jeu</div>
+        <div class="game-name">FORZA <em>HORIZON 5</em></div>
+      </div>
+      <div class="platform-icons">
+        <span title="PC">💻</span>
+        <span title="Console">🎮</span>
+      </div>
+    </div>
+
+    <!-- Rules -->
+    <div class="rules-strip">
+      <div class="rule-chip">
+        <span class="rule-icon">⚖️</span>
+        <div class="rule-text">Fair-play<br>obligatoire</div>
+      </div>
+      <div class="rule-chip">
+        <span class="rule-icon">🎙️</span>
+        <div class="rule-text">Micro coupé<br>par défaut</div>
+      </div>
+      <div class="rule-chip">
+        <span class="rule-icon">🛡️</span>
+        <div class="rule-text">Modération<br>présente</div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-block">
+      <a href="https://discord.gg/WQJCS3r6H3" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href,'_blank'); return false;" style="text-decoration:none; display:block; cursor:pointer;">
+        <div class="cta-btn">
+          <div class="cta-top">Rejoins nous sur Discord</div>
+          <div class="cta-main">🔗 APEX FAMILY</div>
+          <div class="cta-link">discord.gg/WQJCS3r6H3</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span class="footer-text">Créé par</span>
+      <span class="footer-dot">●</span>
+      <span class="footer-text" style="color:rgba(255,140,80,0.6)">KIMIUS</span>
+      <span class="footer-dot">●</span>
+      <span class="footer-text">On vous attend nombreux 🔥</span>
+    </div>
+
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="bottom-bar"></div>
+</div>
+</body>
+</html>
